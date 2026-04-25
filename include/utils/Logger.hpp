@@ -7,7 +7,7 @@
 
 namespace xva {
 
-enum class LogLevel { DEBUG, INFO, WARNING, ERROR };
+enum class LogLevel { DBG, INFO, WARNING, ERROR };
 
 class Logger {
 public:
@@ -24,7 +24,7 @@ public:
     }
 
     template<typename... Args>
-    void debug  (Args&&... a) { log(LogLevel::DEBUG,   std::forward<Args>(a)...); }
+    void debug  (Args&&... a) { log(LogLevel::DBG,     std::forward<Args>(a)...); }
     template<typename... Args>
     void info   (Args&&... a) { log(LogLevel::INFO,    std::forward<Args>(a)...); }
     template<typename... Args>

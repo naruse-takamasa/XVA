@@ -21,6 +21,7 @@ include_directories(include)
 
 # ── Library sources ──────────────────────────────────────────────────────────
 set(LIB_SOURCES
+    src/utils/Common.cpp
     src/models/HullWhiteModel.cpp
     src/instruments/InterestRateSwap.cpp
     src/simulation/MonteCarloEngine.cpp
