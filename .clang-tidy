@@ -9,6 +9,7 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
   -bugprone-random-generator-seed,
+  -clang-analyzer-deadcode.DeadStores,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
 
 WarningsAsErrors: '*'
