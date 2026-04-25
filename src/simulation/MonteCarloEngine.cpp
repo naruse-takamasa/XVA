@@ -21,8 +21,6 @@ void MonteCarloEngine::simulateBlock(std::size_t pathStart, std::size_t pathEnd,
     std::mt19937_64 rng(seed);
     std::size_t N = grid.size();
 
-    // Simulate short-rate paths for this block
-    TimeGrid blockGrid = grid;
     std::size_t blockSize = pathEnd - pathStart;
 
     Matrix rPaths = model_.simulatePaths(grid, blockSize, rng);
@@ -59,7 +57,7 @@ SimulationResult MonteCarloEngine::runPortfolio(const std::vector<InterestRateSw
         std::size_t start = t * blockSize;
         std::size_t end = std::min(start + blockSize, numPaths);
         if (start >= end) break;
-        unsigned seed = static_cast<unsigned>(config_.seed + t * 1000000);
+        unsigned seed = static_cast<unsigned>(config_.seed + static_cast<std::size_t>(t) * 1000000);
         threads.emplace_back([&, start, end, seed]() {
             simulateBlock(start, end, swaps, grid, result.pathValues, seed);
         });
@@ -106,8 +104,8 @@ void MonteCarloEngine::computeExposureProfiles(SimulationResult& result) const {
             ee += std::max(v, 0.0);
             ene += std::min(v, 0.0);
         }
-        result.EE[i] = ee / P;
-        result.ENE[i] = ene / P;
+        result.EE[i] = ee / static_cast<Real>(P);
+        result.ENE[i] = ene / static_cast<Real>(P);
 
         // PFE @ 95%
         std::vector<Real> pos;
@@ -115,7 +113,7 @@ void MonteCarloEngine::computeExposureProfiles(SimulationResult& result) const {
             if (v > 0) pos.push_back(v);
         if (!pos.empty()) {
             std::sort(pos.begin(), pos.end());
-            result.PFE[i] = pos[static_cast<std::size_t>(0.95 * pos.size())];
+            result.PFE[i] = pos[static_cast<std::size_t>(0.95 * static_cast<Real>(pos.size()))];
         }
     }
 

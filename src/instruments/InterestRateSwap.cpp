@@ -11,15 +11,13 @@ InterestRateSwap::InterestRateSwap(const SwapSchedule& sched, bool payFixed)
 }
 
 void InterestRateSwap::buildSchedule() {
-    // Build fixed payment dates
     Real fixedPeriod = 1.0 / sched_.fixedFreq;
-    for (Real d = sched_.startDate + fixedPeriod; d <= sched_.endDate + 1e-9; d += fixedPeriod)
-        fixedDates_.push_back(d);
+    int numFixed = static_cast<int>(std::round((sched_.endDate - sched_.startDate) / fixedPeriod));
+    for (int n = 1; n <= numFixed; ++n) fixedDates_.push_back(sched_.startDate + n * fixedPeriod);
 
-    // Build float payment dates
     Real floatPeriod = 1.0 / sched_.floatFreq;
-    for (Real d = sched_.startDate + floatPeriod; d <= sched_.endDate + 1e-9; d += floatPeriod)
-        floatDates_.push_back(d);
+    int numFloat = static_cast<int>(std::round((sched_.endDate - sched_.startDate) / floatPeriod));
+    for (int n = 1; n <= numFloat; ++n) floatDates_.push_back(sched_.startDate + n * floatPeriod);
 }
 
 Real InterestRateSwap::accrualFactor(Date t1, Date t2) const {
@@ -58,9 +56,6 @@ Real InterestRateSwap::floatLegNPV(Date t, Real rt, const HullWhiteModel& m) con
         // Forward rate for this period
         Real df_start = (prevDate > t) ? m.bondPrice(t, prevDate, rt) : 1.0;
         Real df_end = m.bondPrice(t, payDate, rt);
-        Real alpha = accrualFactor(prevDate, payDate);
-        // Floating coupon PV = (df_start/df_end - 1) * df_end * N
-        //                    = (df_start - df_end) * N
         npvFloat += (df_start - df_end) * sched_.notional;
         prevDate = payDate;
     }

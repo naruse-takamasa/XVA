@@ -29,8 +29,8 @@ void ExposureCalculator::compute(SimulationResult& result) const {
                 ee += std::max(vNet, 0.0);
                 ene += std::min(vNet, 0.0);
             }
-            result.EE[i] = ee / P;
-            result.ENE[i] = ene / P;
+            result.EE[i] = ee / static_cast<Real>(P);
+            result.ENE[i] = ene / static_cast<Real>(P);
         }
     }
 }
@@ -47,14 +47,14 @@ std::vector<Real> ExposureCalculator::computeInitialMargin(const SimulationResul
         // IM proxy: standard deviation of path values * multiplier
         Real mean = 0.0;
         for (std::size_t p = 0; p < P; ++p) mean += result.pathValues[p][i];
-        mean /= P;
+        mean /= static_cast<Real>(P);
 
         Real var = 0.0;
         for (std::size_t p = 0; p < P; ++p) {
             Real d = result.pathValues[p][i] - mean;
             var += d * d;
         }
-        var /= (P - 1);
+        var /= static_cast<Real>(P - 1);
 
         // SIMM-like: IM = multiplier * sigma * sqrt(MPOR/1yr)
         // MPOR = 10 business days ≈ 10/252 years

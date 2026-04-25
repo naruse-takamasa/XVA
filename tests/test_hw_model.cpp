@@ -54,7 +54,7 @@ void test_simulation_mean() {
     // Mean r(1yr) should be approximately f(0,1yr) ≈ 0.03
     Real mean = 0.0;
     for (auto& p : paths) mean += p.back();
-    mean /= paths.size();
+    mean /= static_cast<Real>(paths.size());
     std::cout << "Mean r(1yr): " << mean << " (expected ~0.03 without antithetic, ~0 with)\n";
     // With antithetic variance reduction, half paths are sign-flipped, so mean ≈ 0
     // Just verify mean is in a plausible range for short rate

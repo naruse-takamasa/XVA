@@ -16,17 +16,42 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y clang-format cpplint
+          sudo apt-get install -y clang-format clang-tidy
 
       - name: clang-format check
         run: |
           find include src tests -name '*.cpp' -o -name '*.hpp' \
             | xargs clang-format --dry-run --Werror
 
-      - name: cpplint
+      - name: Configure (generate compile_commands.json)
+        run: cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: clang-tidy
         run: |
-          find include src tests -name '*.cpp' -o -name '*.hpp' \
-            | xargs cpplint --recursive
+          find src tests -name '*.cpp' \
+            | xargs clang-tidy -p build
+
+  sanitize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (ASan + UBSan)
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DSANITIZE=ON \
+            -DCMAKE_CXX_COMPILER=clang++
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        working-directory: build
+        env:
+          ASAN_OPTIONS: halt_on_error=1:detect_leaks=0
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: ctest --output-on-failure
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
