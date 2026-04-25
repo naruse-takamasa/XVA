@@ -1,5 +1,0 @@
-test_irs 2 0.0908857
-test_hw_model 2 0.115475
-test_exposure 2 0.494628
-test_xva 2 0.526265
----
