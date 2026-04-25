@@ -57,5 +57,15 @@ foreach(test_target test_irs test_hw_model test_exposure test_xva)
 endforeach()
 
 # ── Install ──────────────────────────────────────────────────────────────────
+install(TARGETS xva_lib DESTINATION lib)
 install(TARGETS xva_calculator DESTINATION bin)
 install(DIRECTORY include/ DESTINATION include/xva)
+
+# ── Packaging (CPack) ─────────────────────────────────────────────────────────
+set(CPACK_PACKAGE_NAME "xva")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_FILE_NAME
+    "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_GENERATOR "TGZ")
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+include(CPack)
