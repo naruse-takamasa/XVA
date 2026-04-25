@@ -1,6 +1,8 @@
 #include "Common.hpp"
-#include "utils/MathUtils.hpp"
+
 #include <stdexcept>
+
+#include "utils/MathUtils.hpp"
 
 namespace xva {
 
@@ -33,4 +35,4 @@ Real CreditCurve::hazardRate(Date t) const {
     return -std::log(q2 / q1) / dt;
 }
 
-} // namespace xva
+}  // namespace xva

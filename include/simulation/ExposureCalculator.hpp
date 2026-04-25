@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "Common.hpp"
 
 namespace xva {
@@ -15,17 +17,15 @@ namespace xva {
  */
 class ExposureCalculator {
 public:
-    explicit ExposureCalculator(Real collateralThreshold = 0.0,
-                                Real minimumTransferAmt  = 0.0);
+    explicit ExposureCalculator(Real collateralThreshold = 0.0, Real minimumTransferAmt = 0.0);
 
     // Compute exposure metrics from simulation result (modifies result in place)
     void compute(SimulationResult& result) const;
 
     // Compute SIMM-like initial margin proxy profile
     // Returns IM[timeStep]
-    std::vector<Real> computeInitialMargin(
-        const SimulationResult& result,
-        Real imMultiplier = 1.4) const;     // Basel multiplier
+    std::vector<Real> computeInitialMargin(const SimulationResult& result,
+                                           Real imMultiplier = 1.4) const;  // Basel multiplier
 
     // Effective EPE (for CVA capital)
     Real effectiveEPE(const SimulationResult& result) const;
@@ -43,4 +43,4 @@ private:
     std::vector<Real> applyCollateral(const std::vector<Real>& values) const;
 };
 
-} // namespace xva
+}  // namespace xva

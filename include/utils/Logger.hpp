@@ -1,9 +1,10 @@
 #pragma once
-#include <string>
-#include <iostream>
-#include <sstream>
 #include <chrono>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <utility>
 
 namespace xva {
 
@@ -15,7 +16,7 @@ public:
 
     void setLevel(LogLevel level) { level_ = level; }
 
-    template<typename... Args>
+    template <typename... Args>
     void log(LogLevel level, Args&&... args) {
         if (level < level_) return;
         std::ostringstream oss;
@@ -23,14 +24,22 @@ public:
         emit(level, oss.str());
     }
 
-    template<typename... Args>
-    void debug  (Args&&... a) { log(LogLevel::DBG,     std::forward<Args>(a)...); }
-    template<typename... Args>
-    void info   (Args&&... a) { log(LogLevel::INFO,    std::forward<Args>(a)...); }
-    template<typename... Args>
-    void warning(Args&&... a) { log(LogLevel::WARNING, std::forward<Args>(a)...); }
-    template<typename... Args>
-    void error  (Args&&... a) { log(LogLevel::ERROR,   std::forward<Args>(a)...); }
+    template <typename... Args>
+    void debug(Args&&... a) {
+        log(LogLevel::DBG, std::forward<Args>(a)...);
+    }
+    template <typename... Args>
+    void info(Args&&... a) {
+        log(LogLevel::INFO, std::forward<Args>(a)...);
+    }
+    template <typename... Args>
+    void warning(Args&&... a) {
+        log(LogLevel::WARNING, std::forward<Args>(a)...);
+    }
+    template <typename... Args>
+    void error(Args&&... a) {
+        log(LogLevel::ERROR, std::forward<Args>(a)...);
+    }
 
 private:
     Logger() = default;
@@ -39,9 +48,9 @@ private:
     const char* levelStr(LogLevel l);
 };
 
-#define LOG_DEBUG(...)   xva::Logger::instance().debug(__VA_ARGS__)
-#define LOG_INFO(...)    xva::Logger::instance().info(__VA_ARGS__)
-#define LOG_WARN(...)    xva::Logger::instance().warning(__VA_ARGS__)
-#define LOG_ERROR(...)   xva::Logger::instance().error(__VA_ARGS__)
+#define LOG_DEBUG(...) xva::Logger::instance().debug(__VA_ARGS__)
+#define LOG_INFO(...) xva::Logger::instance().info(__VA_ARGS__)
+#define LOG_WARN(...) xva::Logger::instance().warning(__VA_ARGS__)
+#define LOG_ERROR(...) xva::Logger::instance().error(__VA_ARGS__)
 
-} // namespace xva
+}  // namespace xva

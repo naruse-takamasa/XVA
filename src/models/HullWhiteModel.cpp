@@ -1,7 +1,11 @@
 #include "models/HullWhiteModel.hpp"
-#include "utils/MathUtils.hpp"
+
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include <vector>
+
+#include "utils/MathUtils.hpp"
 
 namespace xva {
 
@@ -19,13 +23,12 @@ Real HullWhiteModel::B(Date t, Date T) const {
 
 // ln A(t,T) = ln(P(0,T)/P(0,t)) + B(t,T)*f(0,t) - sigma^2/(4a)*B(t,T)^2*(1-exp(-2at))
 Real HullWhiteModel::A(Date t, Date T) const {
-    Real df0t  = curve_.df(t);
-    Real df0T  = curve_.df(T);
-    Real f0t   = initialForwardRate(t);
-    Real b     = B(t, T);
-    Real lnA   = std::log(df0T / df0t)
-                 + b * f0t
-                 - (sigma_ * sigma_) / (4.0 * a_) * b * b * (1.0 - std::exp(-2.0 * a_ * t));
+    Real df0t = curve_.df(t);
+    Real df0T = curve_.df(T);
+    Real f0t = initialForwardRate(t);
+    Real b = B(t, T);
+    Real lnA = std::log(df0T / df0t) + b * f0t -
+               (sigma_ * sigma_) / (4.0 * a_) * b * b * (1.0 - std::exp(-2.0 * a_ * t));
     return lnA;
 }
 
@@ -51,17 +54,17 @@ Real HullWhiteModel::variance(Date t) const {
 // theta(t) = d f(0,t)/dt + a*f(0,t) + sigma^2/(2a)*(1-exp(-2at))
 Real HullWhiteModel::theta(Date t) const {
     const Real h = 1e-5;
-    Real f0   = initialForwardRate(std::max(t - h, 0.0));
-    Real f1   = initialForwardRate(t + h);
+    Real f0 = initialForwardRate(std::max(t - h, 0.0));
+    Real f1 = initialForwardRate(t + h);
     Real dfdt = (f1 - f0) / (2.0 * h);
-    return dfdt + a_ * initialForwardRate(t) + (sigma_ * sigma_) / a_ * (1.0 - std::exp(-2.0 * a_ * t)) * 0.5;
+    return dfdt + a_ * initialForwardRate(t) +
+           (sigma_ * sigma_) / a_ * (1.0 - std::exp(-2.0 * a_ * t)) * 0.5;
 }
 
 // Exact Gaussian discretisation of Hull-White:
 // r(t+dt) = r(t)*e^{-a*dt} + [f(0,t+dt) - f(0,t)*e^{-a*dt}]
 //           + sigma^2/(2a)*(1-e^{-a*dt})^2  +  sigma*sqrt((1-e^{-2a*dt})/(2a))*Z
-Matrix HullWhiteModel::simulatePaths(const TimeGrid& grid,
-                                     std::size_t     numPaths,
+Matrix HullWhiteModel::simulatePaths(const TimeGrid& grid, std::size_t numPaths,
                                      std::mt19937_64& rng) const {
     std::size_t N = grid.size();
     Matrix paths(numPaths, std::vector<Real>(N, 0.0));
@@ -72,21 +75,19 @@ Matrix HullWhiteModel::simulatePaths(const TimeGrid& grid,
     for (std::size_t p = 0; p < numPaths; ++p) {
         paths[p][0] = r0;
         for (std::size_t i = 1; i < N; ++i) {
-            Real t   = grid[i - 1];
-            Real t1  = grid[i];
-            Real dt  = t1 - t;
+            Real t = grid[i - 1];
+            Real t1 = grid[i];
+            Real dt = t1 - t;
             Real e_a = std::exp(-a_ * dt);
 
             // Exact conditional mean
-            Real f0     = initialForwardRate(t);
-            Real f1     = initialForwardRate(t1);
-            Real convex = (sigma_ * sigma_) / (2.0 * a_)
-                          * (1.0 - e_a) * (1.0 - e_a);
-            Real mean_r = paths[p][i-1] * e_a + (f1 - f0 * e_a) + convex;
+            Real f0 = initialForwardRate(t);
+            Real f1 = initialForwardRate(t1);
+            Real convex = (sigma_ * sigma_) / (2.0 * a_) * (1.0 - e_a) * (1.0 - e_a);
+            Real mean_r = paths[p][i - 1] * e_a + (f1 - f0 * e_a) + convex;
 
             // Exact conditional variance
-            Real var_r  = (sigma_ * sigma_) / (2.0 * a_)
-                          * (1.0 - e_a * e_a);
+            Real var_r = (sigma_ * sigma_) / (2.0 * a_) * (1.0 - e_a * e_a);
 
             paths[p][i] = mean_r + std::sqrt(var_r) * norm(rng);
         }
@@ -94,4 +95,4 @@ Matrix HullWhiteModel::simulatePaths(const TimeGrid& grid,
     return paths;
 }
 
-} // namespace xva
+}  // namespace xva

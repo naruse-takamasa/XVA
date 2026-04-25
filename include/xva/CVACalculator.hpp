@@ -15,21 +15,18 @@ class CVACalculator {
 public:
     CVACalculator(Real recoveryRate, const CreditCurve& counterpartyCurve);
 
-    Real compute(const SimulationResult& result,
-                 const YieldCurve&       discountCurve) const;
+    Real compute(const SimulationResult& result, const YieldCurve& discountCurve) const;
 
     // Unilateral CVA (no DVA offset)
-    Real computeUnilateral(const SimulationResult& result,
-                           const YieldCurve&       discountCurve) const;
+    Real computeUnilateral(const SimulationResult& result, const YieldCurve& discountCurve) const;
 
     // CVA sensitivity to parallel shift in credit spread (CS01)
-    Real cs01(const SimulationResult& result,
-              const YieldCurve&       discountCurve,
+    Real cs01(const SimulationResult& result, const YieldCurve& discountCurve,
               Real bpShift = 0.0001) const;
 
 private:
-    Real        recoveryRate_;
+    Real recoveryRate_;
     CreditCurve cpCurve_;
 };
 
-} // namespace xva
+}  // namespace xva

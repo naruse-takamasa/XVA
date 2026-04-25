@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "Common.hpp"
 
 namespace xva {
@@ -21,17 +23,16 @@ class MVACalculator {
 public:
     explicit MVACalculator(Real imFundingSpread);
 
-    Real compute(const SimulationResult& result,
-                 const std::vector<Real>& imProfile,
-                 const YieldCurve&        discountCurve) const;
+    Real compute(const SimulationResult& result, const std::vector<Real>& imProfile,
+                 const YieldCurve& discountCurve) const;
 
     // Sensitivity: MVA change per 1bp shift in funding spread
     Real fundingSpreadSensitivity(const SimulationResult& result,
                                   const std::vector<Real>& imProfile,
-                                  const YieldCurve&        discountCurve) const;
+                                  const YieldCurve& discountCurve) const;
 
 private:
     Real imFundingSpread_;
 };
 
-} // namespace xva
+}  // namespace xva

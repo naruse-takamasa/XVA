@@ -24,18 +24,15 @@ public:
     // Asymmetric: borrowing vs lending spread
     FVACalculator(Real borrowingSpread, Real lendingSpread);
 
-    Real compute   (const SimulationResult& result,
-                    const YieldCurve&       discountCurve) const;
+    Real compute(const SimulationResult& result, const YieldCurve& discountCurve) const;
 
-    Real computeFCA(const SimulationResult& result,
-                    const YieldCurve&       discountCurve) const;
+    Real computeFCA(const SimulationResult& result, const YieldCurve& discountCurve) const;
 
-    Real computeFBA(const SimulationResult& result,
-                    const YieldCurve&       discountCurve) const;
+    Real computeFBA(const SimulationResult& result, const YieldCurve& discountCurve) const;
 
 private:
     Real borrowingSpread_;
     Real lendingSpread_;
 };
 
-} // namespace xva
+}  // namespace xva

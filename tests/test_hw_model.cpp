@@ -1,16 +1,17 @@
-#include "models/HullWhiteModel.hpp"
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <random>
 
+#include "models/HullWhiteModel.hpp"
+
 using namespace xva;
 
-YieldCurve flatCurve(double r, int n=30) {
+YieldCurve flatCurve(double r, int n = 30) {
     YieldCurve c;
     for (int i = 0; i <= n; ++i) {
         c.tenors.push_back(i);
-        c.discountFactors.push_back(std::exp(-r*i));
+        c.discountFactors.push_back(std::exp(-r * i));
     }
     return c;
 }
@@ -22,10 +23,10 @@ void test_bond_price_at_0() {
 
     // P(0,T) from HW should match initial curve
     for (int T : {1, 2, 5, 10}) {
-        Real hwP  = hw.bondPrice(0.0, T, r0);
+        Real hwP = hw.bondPrice(0.0, T, r0);
         Real mktP = curve.df(T);
         std::cout << "P(0," << T << "): HW=" << hwP << " mkt=" << mktP
-                  << " diff=" << std::abs(hwP-mktP) << "\n";
+                  << " diff=" << std::abs(hwP - mktP) << "\n";
         assert(std::abs(hwP - mktP) < 0.01);
     }
     std::cout << "PASS: test_bond_price_at_0\n";

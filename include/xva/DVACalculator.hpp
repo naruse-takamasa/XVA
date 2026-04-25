@@ -17,12 +17,11 @@ class DVACalculator {
 public:
     DVACalculator(Real ownRecoveryRate, const CreditCurve& ownCurve);
 
-    Real compute(const SimulationResult& result,
-                 const YieldCurve&       discountCurve) const;
+    Real compute(const SimulationResult& result, const YieldCurve& discountCurve) const;
 
 private:
-    Real        ownRecovery_;
+    Real ownRecovery_;
     CreditCurve ownCurve_;
 };
 
-} // namespace xva
+}  // namespace xva

@@ -1,4 +1,7 @@
 #pragma once
+#include <string>
+#include <vector>
+
 #include "Common.hpp"
 #include "models/HullWhiteModel.hpp"
 
@@ -7,12 +10,12 @@ namespace xva {
 enum class SwapLeg { Fixed, Floating };
 
 struct SwapSchedule {
-    Date        startDate;        // years from today
-    Date        endDate;
-    Real        fixedRate;
-    Real        notional;
-    int         fixedFreq;        // payments per year (e.g. 1=annual, 2=semi)
-    int         floatFreq;
+    Date startDate;  // years from today
+    Date endDate;
+    Real fixedRate;
+    Real notional;
+    int fixedFreq;  // payments per year (e.g. 1=annual, 2=semi)
+    int floatFreq;
     std::string dayCountConvention;  // "ACT360", "ACT365", "30360"
 };
 
@@ -25,7 +28,7 @@ class InterestRateSwap {
 public:
     // payFixed=true  -> we pay fixed, receive floating  (payer swap)
     // payFixed=false -> we receive fixed, pay floating  (receiver swap)
-    InterestRateSwap(const SwapSchedule& sched, bool payFixed = true);
+    explicit InterestRateSwap(const SwapSchedule& sched, bool payFixed = true);
 
     // Analytical NPV at time t given short rate r(t)
     Real npv(Date t, Real rt, const HullWhiteModel& model) const;
@@ -41,14 +44,14 @@ public:
 
 private:
     SwapSchedule sched_;
-    bool         payFixed_;
+    bool payFixed_;
 
-    std::vector<Date> fixedDates_;    // payment dates for fixed leg
-    std::vector<Date> floatDates_;    // payment dates for float leg
+    std::vector<Date> fixedDates_;  // payment dates for fixed leg
+    std::vector<Date> floatDates_;  // payment dates for float leg
 
     void buildSchedule();
-    Real fixedLegNPV (Date t, Real rt, const HullWhiteModel& m) const;
-    Real floatLegNPV (Date t, Real rt, const HullWhiteModel& m) const;
+    Real fixedLegNPV(Date t, Real rt, const HullWhiteModel& m) const;
+    Real floatLegNPV(Date t, Real rt, const HullWhiteModel& m) const;
 };
 
-} // namespace xva
+}  // namespace xva

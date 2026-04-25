@@ -1,16 +1,17 @@
-#include "instruments/InterestRateSwap.hpp"
-#include "models/HullWhiteModel.hpp"
 #include <cassert>
 #include <cmath>
 #include <iostream>
 
+#include "instruments/InterestRateSwap.hpp"
+#include "models/HullWhiteModel.hpp"
+
 using namespace xva;
 
-YieldCurve flatCurve(double r, int n=30) {
+YieldCurve flatCurve(double r, int n = 30) {
     YieldCurve c;
     for (int i = 0; i <= n; ++i) {
         c.tenors.push_back(i);
-        c.discountFactors.push_back(std::exp(-r*i));
+        c.discountFactors.push_back(std::exp(-r * i));
     }
     return c;
 }
@@ -20,8 +21,11 @@ void test_par_swap_zero_npv() {
     HullWhiteModel hw(0.05, 0.01, curve);
 
     SwapSchedule s;
-    s.startDate = 0; s.endDate = 5;
-    s.notional = 1e6; s.fixedFreq = 1; s.floatFreq = 2;
+    s.startDate = 0;
+    s.endDate = 5;
+    s.notional = 1e6;
+    s.fixedFreq = 1;
+    s.floatFreq = 2;
     s.dayCountConvention = "ACT365";
 
     InterestRateSwap tmp(s, true);
@@ -41,11 +45,15 @@ void test_payer_receiver_symmetry() {
     HullWhiteModel hw(0.05, 0.01, curve);
 
     SwapSchedule s;
-    s.startDate = 0; s.endDate = 5;
-    s.notional = 1e6; s.fixedFreq = 1; s.floatFreq = 2;
-    s.fixedRate = 0.03; s.dayCountConvention = "ACT365";
+    s.startDate = 0;
+    s.endDate = 5;
+    s.notional = 1e6;
+    s.fixedFreq = 1;
+    s.floatFreq = 2;
+    s.fixedRate = 0.03;
+    s.dayCountConvention = "ACT365";
 
-    InterestRateSwap payer  (s, true );
+    InterestRateSwap payer(s, true);
     InterestRateSwap receiver(s, false);
 
     Real r0 = hw.initialForwardRate(0.0);

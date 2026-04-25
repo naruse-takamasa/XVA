@@ -1,8 +1,11 @@
 #include "simulation/ExposureCalculator.hpp"
-#include "utils/MathUtils.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <vector>
+
+#include "utils/MathUtils.hpp"
 
 namespace xva {
 
@@ -22,12 +25,11 @@ void ExposureCalculator::compute(SimulationResult& result) const {
                 // Simple threshold collateral
                 Real collat = std::max(0.0, std::abs(v) - collateralThreshold_);
                 if (collat < minimumTransferAmt_) collat = 0.0;
-                Real vNet = (v > 0) ? std::max(0.0, v - collat)
-                                    : std::min(0.0, v + collat);
-                ee  += std::max(vNet, 0.0);
+                Real vNet = (v > 0) ? std::max(0.0, v - collat) : std::min(0.0, v + collat);
+                ee += std::max(vNet, 0.0);
                 ene += std::min(vNet, 0.0);
             }
-            result.EE [i] = ee  / P;
+            result.EE[i] = ee / P;
             result.ENE[i] = ene / P;
         }
     }
@@ -35,19 +37,16 @@ void ExposureCalculator::compute(SimulationResult& result) const {
 
 // SIMM-proxy: IM ≈ imMultiplier * EE * sqrt(10/250) * sqrt(252/dt)
 // Simplified: IM proportional to volatility of exposure
-std::vector<Real> ExposureCalculator::computeInitialMargin(
-    const SimulationResult& result,
-    Real imMultiplier) const
-{
-    std::size_t N  = result.timeGrid.size();
-    std::size_t P  = result.numPaths;
+std::vector<Real> ExposureCalculator::computeInitialMargin(const SimulationResult& result,
+                                                           Real imMultiplier) const {
+    std::size_t N = result.timeGrid.size();
+    std::size_t P = result.numPaths;
     std::vector<Real> im(N, 0.0);
 
     for (std::size_t i = 0; i < N; ++i) {
         // IM proxy: standard deviation of path values * multiplier
         Real mean = 0.0;
-        for (std::size_t p = 0; p < P; ++p)
-            mean += result.pathValues[p][i];
+        for (std::size_t p = 0; p < P; ++p) mean += result.pathValues[p][i];
         mean /= P;
 
         Real var = 0.0;
@@ -68,4 +67,4 @@ Real ExposureCalculator::effectiveEPE(const SimulationResult& result) const {
     return result.EEPE.empty() ? 0.0 : result.EEPE[0];
 }
 
-} // namespace xva
+}  // namespace xva

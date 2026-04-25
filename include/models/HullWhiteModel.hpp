@@ -1,6 +1,7 @@
 #pragma once
-#include "Common.hpp"
 #include <random>
+
+#include "Common.hpp"
 
 namespace xva {
 
@@ -34,20 +35,18 @@ public:
 
     // Simulate short-rate paths on a time grid (Euler-Maruyama)
     // Returns [path][timeStep] matrix of short rates
-    Matrix simulatePaths(const TimeGrid& grid,
-                         std::size_t     numPaths,
-                         std::mt19937_64& rng) const;
+    Matrix simulatePaths(const TimeGrid& grid, std::size_t numPaths, std::mt19937_64& rng) const;
 
     // Accessors
-    Real a()     const { return a_; }
+    Real a() const { return a_; }
     Real sigma() const { return sigma_; }
 
 private:
-    Real        a_;
-    Real        sigma_;
-    YieldCurve  curve_;
+    Real a_;
+    Real sigma_;
+    YieldCurve curve_;
 
     Real theta(Date t) const;  // theta(t) from initial curve
 };
 
-} // namespace xva
+}  // namespace xva

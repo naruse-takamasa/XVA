@@ -1,0 +1,1 @@
+/usr/bin/clang++ -g -O0 -DDEBUG -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/xva_calculator.dir/src/main.cpp.o -o xva_calculator  libxva_lib.a 

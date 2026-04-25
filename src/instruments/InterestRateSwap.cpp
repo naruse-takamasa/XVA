@@ -1,4 +1,5 @@
 #include "instruments/InterestRateSwap.hpp"
+
 #include <cmath>
 #include <stdexcept>
 
@@ -23,8 +24,7 @@ void InterestRateSwap::buildSchedule() {
 
 Real InterestRateSwap::accrualFactor(Date t1, Date t2) const {
     // ACT/360, ACT/365, or 30/360 – default ACT/365
-    if (sched_.dayCountConvention == "ACT360")
-        return (t2 - t1) * 365.0 / 360.0;
+    if (sched_.dayCountConvention == "ACT360") return (t2 - t1) * 365.0 / 360.0;
     return t2 - t1;  // ACT/365 (year fraction already in years)
 }
 
@@ -33,11 +33,14 @@ Real InterestRateSwap::fixedLegNPV(Date t, Real rt, const HullWhiteModel& m) con
     Real npvFixed = 0.0;
     Real prevDate = sched_.startDate;
     for (Date payDate : fixedDates_) {
-        if (payDate <= t) { prevDate = payDate; continue; }
+        if (payDate <= t) {
+            prevDate = payDate;
+            continue;
+        }
         Real alpha = accrualFactor(prevDate, payDate);
-        Real pv    = m.bondPrice(t, payDate, rt) * sched_.fixedRate * alpha * sched_.notional;
-        npvFixed  += pv;
-        prevDate   = payDate;
+        Real pv = m.bondPrice(t, payDate, rt) * sched_.fixedRate * alpha * sched_.notional;
+        npvFixed += pv;
+        prevDate = payDate;
     }
     return npvFixed;
 }
@@ -48,15 +51,18 @@ Real InterestRateSwap::floatLegNPV(Date t, Real rt, const HullWhiteModel& m) con
     Real npvFloat = 0.0;
     Real prevDate = sched_.startDate;
     for (Date payDate : floatDates_) {
-        if (payDate <= t) { prevDate = payDate; continue; }
+        if (payDate <= t) {
+            prevDate = payDate;
+            continue;
+        }
         // Forward rate for this period
         Real df_start = (prevDate > t) ? m.bondPrice(t, prevDate, rt) : 1.0;
-        Real df_end   = m.bondPrice(t, payDate, rt);
-        Real alpha    = accrualFactor(prevDate, payDate);
+        Real df_end = m.bondPrice(t, payDate, rt);
+        Real alpha = accrualFactor(prevDate, payDate);
         // Floating coupon PV = (df_start/df_end - 1) * df_end * N
         //                    = (df_start - df_end) * N
         npvFloat += (df_start - df_end) * sched_.notional;
-        prevDate  = payDate;
+        prevDate = payDate;
     }
     return npvFloat;
 }
@@ -66,7 +72,7 @@ Real InterestRateSwap::npv(Date t, Real rt, const HullWhiteModel& model) const {
     if (t >= sched_.endDate) return 0.0;
 
     Real fixed = fixedLegNPV(t, rt, model);
-    Real flt   = floatLegNPV(t, rt, model);
+    Real flt = floatLegNPV(t, rt, model);
 
     // Payer swap (pay fixed): NPV = float - fixed
     // Receiver swap         : NPV = fixed - float
@@ -81,15 +87,15 @@ Real InterestRateSwap::parRate(const YieldCurve& curve) const {
     for (Date payDate : fixedDates_) {
         Real alpha = accrualFactor(prevDate, payDate);
         annuity += alpha * curve.df(payDate);
-        prevDate  = payDate;
+        prevDate = payDate;
     }
     // Float leg value
     Real dfStart = curve.df(sched_.startDate);
-    Real dfEnd   = curve.df(sched_.endDate);
+    Real dfEnd = curve.df(sched_.endDate);
     Real floatPV = (dfStart - dfEnd) * sched_.notional;
 
     if (std::abs(annuity) < 1e-12) throw std::runtime_error("IRS: zero annuity");
     return floatPV / (annuity * sched_.notional);
 }
 
-} // namespace xva
+}  // namespace xva
