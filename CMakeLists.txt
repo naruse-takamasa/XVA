@@ -14,11 +14,19 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Sanitizers
+# Sanitizers (mutually exclusive)
 option(SANITIZE "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+option(TSAN "Enable ThreadSanitizer" OFF)
+if(SANITIZE AND TSAN)
+    message(FATAL_ERROR "SANITIZE (ASan/UBSan) and TSAN are mutually exclusive")
+endif()
 if(SANITIZE)
     add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
     add_link_options(-fsanitize=address,undefined)
+endif()
+if(TSAN)
+    add_compile_options(-fsanitize=thread -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=thread)
 endif()
 
 # Find packages
@@ -54,13 +62,23 @@ target_link_libraries(xva_calculator xva_lib)
 # ── Tests ────────────────────────────────────────────────────────────────────
 enable_testing()
 
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 add_executable(test_irs        tests/test_irs.cpp)
 add_executable(test_hw_model   tests/test_hw_model.cpp)
 add_executable(test_exposure   tests/test_exposure.cpp)
 add_executable(test_xva        tests/test_xva.cpp)
 
 foreach(test_target test_irs test_hw_model test_exposure test_xva)
-    target_link_libraries(${test_target} xva_lib)
+    target_link_libraries(${test_target} xva_lib GTest::gtest_main)
+    target_include_directories(${test_target} PRIVATE ${CMAKE_SOURCE_DIR}/tests)
     add_test(NAME ${test_target} COMMAND ${test_target})
 endforeach()
 

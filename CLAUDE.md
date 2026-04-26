@@ -6,13 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Configure and build (Release)
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j4
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
 
 # Debug build
-cmake .. -DCMAKE_BUILD_TYPE=Debug
-make -j4
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel
+
+# ASan + UBSan build (requires clang++)
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DSANITIZE=ON -DCMAKE_CXX_COMPILER=clang++
+cmake --build build --parallel
+
+# TSan build — detects data races in the MC engine (mutually exclusive with SANITIZE)
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DTSAN=ON -DCMAKE_CXX_COMPILER=clang++
+cmake --build build --parallel
 
 # Run main executable
 ./build/xva_calculator
@@ -20,7 +27,7 @@ make -j4
 # Run all tests
 cd build && ctest --output-on-failure
 
-# Run a single test executable
+# Run a single test
 ./build/test_irs
 ./build/test_hw_model
 ./build/test_exposure
@@ -28,6 +35,22 @@ cd build && ctest --output-on-failure
 ```
 
 No external dependencies — only C++17 standard library is required.
+
+## Linting and Formatting
+
+```bash
+# Check formatting (dry-run)
+find include src tests -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror
+
+# Apply formatting in-place
+find include src tests -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i
+
+# Run clang-tidy (requires compile_commands.json — configure with CMAKE_EXPORT_COMPILE_COMMANDS=ON)
+cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+find src tests -name '*.cpp' | xargs clang-tidy -p build
+```
+
+Style is Google-based (`.clang-format`): 4-space indent, 100-column limit. Clang-tidy config is in `.clang-tidy` with `WarningsAsErrors: '*'`.
 
 ## Architecture Overview
 
@@ -60,6 +83,7 @@ This is a C++17 XVA (Valuation Adjustments) pricing engine for Interest Rate Swa
 - Each MC thread owns its own RNG seed to avoid contention; antithetic paths are generated within each thread.
 - `YieldCurve::df()` and `CreditCurve::survProb()` interpolate lazily — no pre-computed grids.
 - `SimulationResult` pre-allocates all path matrices before simulation starts.
+- `LogLevel` uses `DBG` (not `DEBUG`) — the Debug CMake build passes `-DDEBUG 1`, which would expand a bare `DEBUG` enum value as a macro.
 
 ### Test Coverage
 
