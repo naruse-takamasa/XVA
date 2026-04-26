@@ -31,6 +31,8 @@ xva_project/
 └── src/ tests/                     # 実装・テスト
 ```
 
+外部依存なし — C++17標準ライブラリのみ（テストフレームワーク: [GoogleTest](https://github.com/google/googletest) を CMake FetchContent で自動取得）。
+
 ---
 
 ## 数式概要
@@ -70,22 +72,61 @@ IM  ≈ 1.4 · σ_exposure · √(10/252)    (SIMM proxy)
 ## ビルド
 
 ```bash
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j4
+# リリースビルド
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+
+# デバッグビルド
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel
 ```
 
 ## 実行
 
 ```bash
-./xva_calculator
+./build/xva_calculator
 ```
 
 ## テスト
 
+GoogleTest を使用。
+
 ```bash
-ctest --output-on-failure
+# 全テスト実行
+cd build && ctest --output-on-failure
+
+# 個別テスト実行
+./build/test_irs
+./build/test_hw_model
+./build/test_exposure
+./build/test_xva
 ```
+
+## サニタイザ
+
+```bash
+# AddressSanitizer + UndefinedBehaviorSanitizer（要 clang++）
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DSANITIZE=ON -DCMAKE_CXX_COMPILER=clang++
+cmake --build build --parallel
+cd build && ctest --output-on-failure
+
+# ThreadSanitizer — MCエンジンのデータレース検出（SANITIZE と排他）
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DTSAN=ON -DCMAKE_CXX_COMPILER=clang++
+cmake --build build --parallel
+cd build && TSAN_OPTIONS=halt_on_error=1 ctest --output-on-failure
+```
+
+---
+
+## CI/CD（GitHub Actions）
+
+| ジョブ | 内容 |
+|---|---|
+| `lint` | clang-format チェック + clang-tidy 静的解析 |
+| `build-and-test` | Release / Debug マトリクスビルド + テスト |
+| `sanitize` | ASan + UBSan ビルド + テスト |
+| `tsan` | ThreadSanitizer ビルド + テスト |
+| `release` | タグ `v*` 時に CPack で TGZ パッケージ化し GitHub Releases へアップロード |
 
 ---
 
